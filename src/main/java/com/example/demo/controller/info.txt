@@ -1,0 +1,5 @@
+Function: Handles client requests and returns responses
+Responsibilities:
+    - Parses and validates request data.
+    - Calls the appropriate method in the service layer.
+    - Formats the data for the response.

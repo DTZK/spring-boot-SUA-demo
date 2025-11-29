@@ -1,0 +1,55 @@
+Service Layer
+Function: Contains the core business logic and orchestrates the application's functionality.
+Responsibilities:
+    - Implements business rules and workflows.
+    - Performs calculations and validations.
+    - Communicates with the repository layer to fetch or persist data.
+
+
+AdminService.java - Authentication Logic
+**Purpose:** Verifies admin credentials during login.
+
+**What it does:**
+- Stores admin username and password hash (from `application.properties`)
+- `authenticate()` method checks if provided username/password match
+- Uses `PasswordEncoder` to securely compare passwords (hashed)
+
+**Example:**
+```
+User submits: username="admin", password="secret123"
+↓
+AdminService checks:
+- Does username match? ✓
+- Does passwordEncoder.matches("secret123", storedHash)? ✓
+↓
+Returns true → Login successful → Generate JWT
+```
+
+---
+
+## **How They Work Together**
+
+### **Login Flow:**
+1. User sends credentials to `/api/auth/login`
+2. **AdminService** validates username/password
+3. If valid, **JwtUtil** generates a token
+4. Token returned to user
+
+### **Protected Request Flow:**
+1. User sends request to `/api/admin/users` with JWT in header
+2. **JwtAuthenticationFilter** intercepts request
+3. Extracts and validates token using **JwtUtil**
+4. Sets authentication in Spring Security context
+5. **SecurityConfig** checks authorization rules
+6. If user has ROLE_ADMIN → Request proceeds
+7. If not → 403 Forbidden
+
+### **Security Layers:**
+```
+Request
+  ↓
+JwtAuthenticationFilter (validates token, sets authentication)
+  ↓
+SecurityConfig (checks if user has required role)
+  ↓
+Controller (handles business logic)

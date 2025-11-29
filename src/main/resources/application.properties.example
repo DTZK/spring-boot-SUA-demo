@@ -1,0 +1,14 @@
+# application.properties.example
+# Copy this to application.properties and fill in your actual values
+
+app.admin.username=admin
+app.admin.password=PUT_YOUR_BCRYPT_HASH_HERE
+app.jwt.secret=PUT_YOUR_SECRET_KEY_HERE_AT_LEAST_256_BITS_LONG
+app.jwt.expiration-ms=3600000
+app.cors.allowed-origins=http://localhost:3000
+
+# H2 Database (optional)
+spring.h2.console.enabled=true
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect

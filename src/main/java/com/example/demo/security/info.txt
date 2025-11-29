@@ -1,0 +1,55 @@
+1. JwtUtil.java - JWT Token Manager
+Purpose: Handles JWT (JSON Web Token) operations.
+What it does:
+
+Generates tokens: Creates a JWT when a user logs in successfully
+Validates tokens: Checks if a token is valid and extracts the username from it
+Uses a secret key to sign tokens (so they can't be forged)
+Sets expiration time for tokens (tokens expire after a certain period)
+
+Example flow:
+
+User logs in → JwtUtil creates token → Token sent to user
+User makes request with token → JwtUtil validates it → Extracts username
+
+2. JwtAuthenticationFilter.java - Request Interceptor
+**Purpose:** Intercepts every HTTP request to check for authentication.
+
+**What it does:**
+- Runs before every request reaches your controllers
+- Looks for `Authorization: Bearer <token>` header
+- If found, validates the token using `JwtUtil`
+- If valid, sets the user as authenticated in Spring Security's context
+- Passes the request along the filter chain
+
+**Example:**
+```
+Request: GET /api/admin/users
+Header: Authorization: Bearer eyJhbGc...
+↓
+Filter extracts "eyJhbGc..."
+↓
+Validates token → username = "admin"
+↓
+Sets authentication with ROLE_ADMIN
+↓
+Request proceeds to controller
+
+3. SecurityConfig.java - Security Configuration
+
+Purpose: Configures Spring Security for your application.
+What it does:
+
+Disables CSRF: Since you're using JWT (stateless), CSRF protection isn't needed
+Configures CORS: Allows requests from specific origins (e.g., your frontend)
+Sets session policy: Stateless (no server-side sessions, just JWT tokens)
+Defines authorization rules:
+
+/api/admin/** → Requires ROLE_ADMIN
+/api/auth/** → Public (for login)
+/api/public/** → Public
+Everything else → Public
+
+
+Adds JWT filter: Inserts JwtAuthenticationFilter before Spring's authentication filter
+Provides PasswordEncoder: BCrypt for hashing passwords
