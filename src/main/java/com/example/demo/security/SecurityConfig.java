@@ -31,7 +31,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, @Value("${app.cors.allowed-origins}") String allowedOrigin) throws Exception {
         http
             .redirectToHttps(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+    .ignoringRequestMatchers("/api/auth/**") // Only disable for JWT endpoints
+)
             .cors(cors -> cors.configurationSource(corsConfig(allowedOrigin)))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
