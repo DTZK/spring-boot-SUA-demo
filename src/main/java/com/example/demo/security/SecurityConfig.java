@@ -22,18 +22,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
+    private final RateLimitFilter rateLimitFilter;
 
-    public SecurityConfig(JwtUtil jwtUtil) { 
+    public SecurityConfig(JwtUtil jwtUtil, RateLimitFilter rateLimitFilter) { 
         this.jwtUtil = jwtUtil; 
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, @Value("${app.cors.allowed-origins}") String allowedOrigin) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, @Value("${app.cors.allowed-origins}") String allowedOrigin, @Value("${app.security.require-https:false}") boolean requireHttps) throws Exception {
         http
             .redirectToHttps(Customizer.withDefaults())
-            .csrf(csrf -> csrf
-    .ignoringRequestMatchers("/api/auth/**") // Only disable for JWT endpoints
-)
+            .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfig(allowedOrigin)))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -42,8 +42,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .anyRequest().permitAll()
             )
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)  // Add rate limiter FIRST
             .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
+        if (requireHttps) {
+            http.redirectToHttps(Customizer.withDefaults()); //check application properties
+        }
         return http.build();
     }
 
